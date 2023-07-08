@@ -1,32 +1,22 @@
 {
-  "compilerOptions": { 
-    "module": "ESNext",
-    "target": "ESNext",
-    "lib": ["esnext"],
-    "rootDir": ".",
-    "baseUrl": "./",
-    "sourceMap": true,
-    "outDir": "./dist",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "noImplicitAny": true,
-    "allowJs": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
-    "moduleResolution": "node",
-    "noEmit": true
-  },
-  "watch": true,
   "ts-node": {
-    "transpileOnly": true,
-    "files": true,
     "esm": true,
+    "experimentalSpecifierResolution": "node"
+    },
     "compilerOptions": {
-      "module": "ESNext"
-    }
-  },
-  "exclude": ["node_modules"]
+      "target": "ESNext",
+      "lib": ["ES6","ESNext"],
+      "module": "ESNext",
+      "allowJs": true,
+      "sourceMap": true,
+      "outDir": "build", 
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+      "strict": true,
+      "noImplicitAny": true,
+      "skipLibCheck": true,
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true
+    },
+  "files": ["index.ts"],
 }
