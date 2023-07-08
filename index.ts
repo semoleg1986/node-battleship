@@ -3,7 +3,7 @@ import { WebSocketServer } from 'ws';
 import {v4 as uuid} from 'uuid';
 
 import { CustomWebSocket, Request } from './src/types/index.js';
-import { userRegistration } from './src/sender/index.js';
+import { userRegistration, createGame } from './src/sender/index.js';
 
 const HTTP_PORT = 8181;
 
@@ -24,7 +24,7 @@ wss.on('connection', (ws: CustomWebSocket)=>{
         userRegistration(receivedMessage, ws);
         break;
       case 'create_room':
-
+        createGame(ws);
         break;
       default:
         console.log(`Uknown message type ${type}`);
