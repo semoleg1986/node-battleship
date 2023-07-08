@@ -2,6 +2,9 @@ import { httpServer } from './src/http_server/index.js';
 import { WebSocketServer } from 'ws';
 import {v4 as uuid} from 'uuid';
 
+import { Request } from './src/types/index.js';
+import { userRegistration } from './src/sender/index.js';
+
 const HTTP_PORT = 8181;
 
 console.log(`Start static http server on the ${HTTP_PORT} port!`);
@@ -13,7 +16,17 @@ wss.on('connection', (ws)=>{
   const id: string = uuid();
   console.log(`New WS client ${id}`);
   ws.on('message', (message: string)=>{
-    ws.send(JSON.stringify(message));
+    const receivedMessage = JSON.parse(message);
+    const {type, data, id}:Request = receivedMessage;
+    switch (type){
+      case 'reg':
+        userRegistration(receivedMessage);
+        break;
+      default:
+        console.log('Uknown message type');
+        break;
+    }
+    ws.send(JSON.stringify(receivedMessage));
   });
 });
 
