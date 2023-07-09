@@ -11,13 +11,13 @@ class Player {
       this.wins = 0;
     }
   }
-  
-const players: Player[] = [];
+
+export const players: Player[] = [];
 
 export function playerExists(name: string): boolean {
     return players.some((player) => player.name === name);
   }
-  
+
 export function registerPlayer(name: string, password: string, index: string) {
     if (playerExists(name)) {
       return { index: -1, error: true, errorText: 'Player already exists' };
@@ -25,7 +25,7 @@ export function registerPlayer(name: string, password: string, index: string) {
   
     const newPlayer = new Player(name, password, index);
     players.push(newPlayer);
-    console.log(players);
+    console.log(players[0].index);
   
     return {
       index,

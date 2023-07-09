@@ -3,9 +3,10 @@ import { WebSocketServer } from 'ws';
 import {v4 as uuid} from 'uuid';
 
 import { CustomWebSocket, Request } from './src/types/index.js';
-import { userRegistration, createGame } from './src/sender/index.js';
+import { userRegistration, updateRoom, createGame } from './src/sender/index.js';
 
 const HTTP_PORT = 8181;
+export const wsclients: CustomWebSocket[] = [];
 
 console.log(`Start static http server on the ${HTTP_PORT} port!`);
 httpServer.listen(HTTP_PORT);
@@ -14,7 +15,9 @@ const wss = new WebSocketServer({ port: 3000 });
 
 wss.on('connection', (ws: CustomWebSocket)=>{
   const id: string = uuid();
-  ws.index = id;
+  ws.index = id; 
+  wsclients.push(ws);
+
   console.log(`New WS client ${id}`);
   ws.on('message', (message: string)=>{
     const receivedMessage = JSON.parse(message);
@@ -24,6 +27,9 @@ wss.on('connection', (ws: CustomWebSocket)=>{
         userRegistration(receivedMessage, ws);
         break;
       case 'create_room':
+        updateRoom();
+        break;
+      case 'add_user_to_room':
         createGame(ws);
         break;
       default:
