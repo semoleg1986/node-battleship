@@ -4,7 +4,7 @@
     "description": "Template for the WebSocket remote control task",
     "type": "module",
     "scripts": {
-        "start": "node ./index.js",
+        "start": "ts-node ./index.ts",
         "start:dev": "cross-env NODE_ENV=development npx nodemon",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
