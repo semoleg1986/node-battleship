@@ -1,4 +1,4 @@
-import { Ship } from '../types';
+import { IGameSession, IIndex, IRoomUsers, Ship } from '../types';
 
 class Player {
     name: string;
@@ -13,22 +13,14 @@ class Player {
       this.wins = 0;
     }
   }
-  
-export interface IGameSession {
-    gameId:string;
-    indexPlayer:string;
-    gameBoard:Ship[]; 
-}
 
-export interface IRoomUsers {
-    name: string;
-    index: string;
-}
-
-export const roomUsers: IRoomUsers[] = [];
 export const players: Player[] = [];
 
 export const gameSession: IGameSession[] = [];
+
+export const roomUsers: IRoomUsers[] = [];
+
+export const indexes:IIndex[] = [];
 
 export function playerExists(name: string): boolean {
     return players.some((player) => player.name === name);
@@ -37,6 +29,12 @@ export const roomRegister = (name: string, index: string): IRoomUsers => {
   const newPlayer: IRoomUsers = { name, index };
   roomUsers.push(newPlayer);
 
+  return newPlayer;
+};
+
+export const addIndex = (playerId: number, index: string): IIndex => {
+  const newPlayer: IIndex = { playerId, index };
+  indexes.push(newPlayer);
   return newPlayer;
 };
 
@@ -61,14 +59,16 @@ export function registerPlayer(name: string, password: string, index: string) {
         errorText: '',
     };
   }
-
-export const placeShip = (gameId:string,indexPlayer:string,ships:Ship[]) => {
+export const ChangeMatrix = (x:number, y:number) =>{
+  console.log(x,y);
+};
+export const placeShip = (gameId:number,indexPlayer:number,ships:Ship[]) => {
     const gridSize = 10;
     const gameBoard = new Array(gridSize);
 
     for (let i = 0; i < gridSize; i++) {
         gameBoard[i] = new Array(gridSize).fill('empty');
-}
+    }
 
     ships.forEach((ship: Ship) => {
         const { position, direction, type, length } = ship;
