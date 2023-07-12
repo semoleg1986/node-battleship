@@ -1,4 +1,4 @@
-import { CustomWebSocket, IIndex, Request } from '../types/index';
+import { CustomWebSocket, IIndex, Request, Ship } from '../types/index';
 import { addIndex, indexes, placeShip, registerPlayer, resetRoomUsers } from '../data/index';
 import { roomRegister } from '../data/index';
 
@@ -35,6 +35,15 @@ const getPlayerNameByIndex = (index: string): string => {
 //         throw new Error(`Matrix not found with index ${index}`);
 //     }
 // };
+function attackNeighboringCells(x: number, y: number, gameBoard: Ship[], index: number) {
+    for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+            if (x + i >= 0 && x + i < gameBoard[y].length && y + j >= 0 && y + j < gameBoard.length) {
+                attackPlayer(x + i, y + j, index, 'miss');
+            }
+        }
+    }
+}
 
 export const getValueByXY = (gameId: number, index: number, x: number, y: number): string | undefined => {
     const data = gameSession.find((data) => data.gameId === gameId && data.indexPlayer === index);
@@ -51,72 +60,278 @@ export const getValueByXY = (gameId: number, index: number, x: number, y: number
                         return 'killed';
                     case 'small':
                         gameBoard[y][x] = 'killed';
-                        for (let i = -1; i <= 1; i++) {
-                            for (let j = -1; j <= 1; j++) {
-                                if (x + i >= 0 && x + i < gameBoard[y].length && y + j >= 0 && y + j < gameBoard.length) {
-                                    attackPlayer(x + i, y + j, index,'miss');
-                                }
-                            }
-                        }
+                        attackNeighboringCells(x, y, gameBoard, index);
                         return 'killed';
                     case 'medium':
                         if (x + 1 < gameBoard[y].length && gameBoard[y][x + 1] === 'shot') {
                             gameBoard[y][x] = 'killed';
-                            for (let i = -1; i <= 1; i++) {
-                                for (let j = -1; j <= 1; j++) {
-                                    if (x + i >= 0 && x + i < gameBoard[y].length && y + j >= 0 && y + j < gameBoard.length) {
-                                        attackPlayer(x + i, y + j, index,'miss');
-                                    }
-                                }
-                            }
+                            gameBoard[y][x+1] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x+1, y, gameBoard, index);
                             attackPlayer(x + 1, y, index, 'killed');
+                            attackPlayer(x, y, index, 'killed');
                             return 'killed';
                         }
                         if (x - 1 >= 0 && gameBoard[y][x - 1] === 'shot') {
                             gameBoard[y][x] = 'killed';
+                            gameBoard[y][x-1] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x-1, y, gameBoard, index);
                             attackPlayer(x - 1, y, index, 'killed');
-                            for (let i = -1; i <= 1; i++) {
-                                for (let j = -1; j <= 1; j++) {
-                                    if (x + i >= 0 && x + i < gameBoard[y].length && y + j >= 0 && y + j < gameBoard.length) {
-                                        attackPlayer(x + i, y + j, index,'miss');
-                                    }
-                                }
-                            }
+                            attackPlayer(x, y, index, 'killed');
                             return 'killed';
                         }
                         if (y + 1 < gameBoard.length && gameBoard[y + 1][x] === 'shot') {
                             gameBoard[y][x] = 'killed';
+                            gameBoard[y+1][x] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x, y+1, gameBoard, index);
                             attackPlayer(x, y + 1, index, 'killed');
-                            for (let i = -1; i <= 1; i++) {
-                                for (let j = -1; j <= 1; j++) {
-                                    if (x + i >= 0 && x + i < gameBoard[y].length && y + j >= 0 && y + j < gameBoard.length) {
-                                        attackPlayer(x + i, y + j, index,'miss');
-                                    }
-                                }
-                            }
+                            attackPlayer(x, y, index, 'killed');
                             return 'killed';
                         }
                         if (y - 1 >= 0 && gameBoard[y - 1][x] === 'shot') {
                             gameBoard[y][x] = 'killed';
+                            gameBoard[y-1][x] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x, y-1, gameBoard, index);
                             attackPlayer(x, y - 1, index, 'killed');
-                            for (let i = -1; i <= 1; i++) {
-                                for (let j = -1; j <= 1; j++) {
-                                    if (x + i >= 0 && x + i < gameBoard[y].length && y + j >= 0 && y + j < gameBoard.length) {
-                                        attackPlayer(x + i, y + j, index,'miss');
-                                    }
-                                }
-                            }
+                            attackPlayer(x, y, index, 'killed');
+                            return 'killed';
+                        }              
+                        break;                            
+                    case 'large':
+                        if (x + 2 < gameBoard[y].length && gameBoard[y][x + 1] === 'shot' && gameBoard[y][x + 2] === 'shot') {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y][x+1] = 'killed';
+                            gameBoard[y][x+2] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x+1, y, gameBoard, index);
+                            attackNeighboringCells(x+2, y, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x+1, y, index, 'killed');
+                            attackPlayer(x+2, y, index, 'killed');
                             return 'killed';
                         }
-                    
-                        console.log(gameBoard[y][x]);
-                        break;
-                            
-                    case 'large':
-                        console.log(gameBoard[y][x]);
+                        else if (x - 2 >= 0 && gameBoard[y][x - 1] === 'shot' && gameBoard[y][x - 2] === 'shot') {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y][x-1] = 'killed';
+                            gameBoard[y][x-2] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x-2, y, gameBoard, index);
+                            attackNeighboringCells(x-1, y, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x-1, y, index, 'killed');
+                            attackPlayer(x-2, y, index, 'killed');
+                            return 'killed';
+                        }
+                        else if (x + 1 < gameBoard[y].length && x - 1 >= 0 && gameBoard[y][x + 1] === 'shot' && gameBoard[y][x - 1] === 'shot') {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y][x+1] = 'killed';
+                            gameBoard[y][x-1] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x-1, y, gameBoard, index);
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x+1, y, index, 'killed');
+                            attackPlayer(x-1, y, index, 'killed');
+                            return 'killed';
+                        }
+                        else if (y + 2 < gameBoard.length && gameBoard[y + 1][x] === 'shot' && gameBoard[y + 2][x] === 'shot') {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y+1][x] = 'killed';
+                            gameBoard[y+2][x] = 'killed';
+                            attackNeighboringCells(x, y+1, gameBoard, index);
+                            attackNeighboringCells(x, y+2, gameBoard, index);
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x, y+2, index, 'killed');
+                            attackPlayer(x, y+1, index, 'killed');
+                            return 'killed';
+                        }
+                        else if (y - 2 >= 0 && gameBoard[y - 1][x] === 'shot' && gameBoard[y - 2][x] === 'shot') {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y-1][x] = 'killed';
+                            gameBoard[y-2][x] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x, y-1, gameBoard, index);
+                            attackNeighboringCells(x, y-2, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x, y-2, index, 'killed');
+                            attackPlayer(x, y-1, index, 'killed');
+                            return 'killed';
+                        }
+                        else if (y + 1 < gameBoard.length && y - 1 >= 0 && gameBoard[y - 1][x] === 'shot' && gameBoard[y + 1][x] === 'shot') {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y+1][x] = 'killed';
+                            gameBoard[y-1][x] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x, y-1, gameBoard, index);
+                            attackNeighboringCells(x, y+1, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x, y+1, index, 'killed');
+                            attackPlayer(x, y-1, index, 'killed');
+                            return 'killed';
+                        }
                         break;
                     case 'huge':
-                        console.log(gameBoard[y][x]);
+                        if (
+                            x + 3 < gameBoard[y].length &&
+                            gameBoard[y][x + 1] === 'shot' &&
+                            gameBoard[y][x + 2] === 'shot' &&
+                            gameBoard[y][x + 3] === 'shot'
+                          ) {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y][x + 1] = 'killed';
+                            gameBoard[y][x + 2] = 'killed';
+                            gameBoard[y][x + 3] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x + 1, y, gameBoard, index);
+                            attackNeighboringCells(x + 2, y, gameBoard, index);
+                            attackNeighboringCells(x + 3, y, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x + 1, y, index, 'killed');
+                            attackPlayer(x + 2, y, index, 'killed');
+                            attackPlayer(x + 3, y, index, 'killed');
+                            return 'killed';
+                          } else if (
+                            x - 3 >= 0 &&
+                            gameBoard[y][x - 1] === 'shot' &&
+                            gameBoard[y][x - 2] === 'shot' &&
+                            gameBoard[y][x - 3] === 'shot'
+                          ) {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y][x - 1] = 'killed';
+                            gameBoard[y][x - 2] = 'killed';
+                            gameBoard[y][x - 3] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x - 1, y, gameBoard, index);
+                            attackNeighboringCells(x - 2, y, gameBoard, index);
+                            attackNeighboringCells(x - 3, y, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x - 1, y, index, 'killed');
+                            attackPlayer(x - 2, y, index, 'killed');
+                            attackPlayer(x - 3, y, index, 'killed');
+                            return 'killed';
+                          } else if (
+                            x + 2 < gameBoard[y].length &&
+                            x - 1 >= 0 &&
+                            gameBoard[y][x + 1] === 'shot' &&
+                            gameBoard[y][x + 2] === 'shot' &&
+                            gameBoard[y][x - 1] === 'shot'
+                          ) {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y][x + 1] = 'killed';
+                            gameBoard[y][x + 2] = 'killed';
+                            gameBoard[y][x - 1] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x - 1, y, gameBoard, index);
+                            attackNeighboringCells(x + 2, y, gameBoard, index);
+                            attackNeighboringCells(x + 1, y, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x + 1, y, index, 'killed');
+                            attackPlayer(x + 2, y, index, 'killed');
+                            attackPlayer(x - 1, y, index, 'killed');
+                            return 'killed';
+                        } else if (
+                            x + 2 < gameBoard[y].length &&
+                            x - 1 >= 0 &&
+                            gameBoard[y][x + 1] === 'shot' &&
+                            gameBoard[y][x - 2] === 'shot' &&
+                            gameBoard[y][x - 1] === 'shot'
+                          ) {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y][x + 1] = 'killed';
+                            gameBoard[y][x - 2] = 'killed';
+                            gameBoard[y][x - 1] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x - 1, y, gameBoard, index);
+                            attackNeighboringCells(x - 2, y, gameBoard, index);
+                            attackNeighboringCells(x + 1, y, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x + 1, y, index, 'killed');
+                            attackPlayer(x - 2, y, index, 'killed');
+                            attackPlayer(x - 1, y, index, 'killed');
+                            return 'killed';
+                          } else if (
+                            y + 3 < gameBoard.length &&
+                            gameBoard[y + 1][x] === 'shot' &&
+                            gameBoard[y + 2][x] === 'shot' &&
+                            gameBoard[y + 3][x] === 'shot'
+                          ) {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y + 1][x] = 'killed';
+                            gameBoard[y + 2][x] = 'killed';
+                            gameBoard[y + 3][x] = 'killed';
+                            attackNeighboringCells(x, y + 1, gameBoard, index);
+                            attackNeighboringCells(x, y + 2, gameBoard, index);
+                            attackNeighboringCells(x, y + 3, gameBoard, index);
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x, y + 1, index, 'killed');
+                            attackPlayer(x, y + 2, index, 'killed');
+                            attackPlayer(x, y + 3, index, 'killed');
+                            return 'killed';
+                          } else if (
+                            y - 3 >= 0 &&
+                            gameBoard[y - 1][x] === 'shot' &&
+                            gameBoard[y - 2][x] === 'shot' &&
+                            gameBoard[y - 3][x] === 'shot'
+                          ) {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y - 1][x] = 'killed';
+                            gameBoard[y - 2][x] = 'killed';
+                            gameBoard[y - 3][x] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x, y - 1, gameBoard, index);
+                            attackNeighboringCells(x, y - 2, gameBoard, index);
+                            attackNeighboringCells(x, y - 3, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x, y - 1, index, 'killed');
+                            attackPlayer(x, y - 2, index, 'killed');
+                            attackPlayer(x, y - 3, index, 'killed');
+                            return 'killed';
+                          } else if (
+                            y + 2 < gameBoard.length &&
+                            y - 1 >= 0 &&
+                            gameBoard[y + 1][x] === 'shot' &&
+                            gameBoard[y + 2][x] === 'shot' &&
+                            gameBoard[y - 1][x] === 'shot'
+                          ) {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y + 1][x] = 'killed';
+                            gameBoard[y + 2][x] = 'killed';
+                            gameBoard[y - 1][x] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x, y - 1, gameBoard, index);
+                            attackNeighboringCells(x, y + 1, gameBoard, index);
+                            attackNeighboringCells(x, y + 2, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x, y + 1, index, 'killed');
+                            attackPlayer(x, y + 2, index, 'killed');
+                            attackPlayer(x, y - 1, index, 'killed');
+                            return 'killed';
+                          } else if (
+                            y + 2 < gameBoard.length &&
+                            y - 1 >= 0 &&
+                            gameBoard[y + 1][x] === 'shot' &&
+                            gameBoard[y - 2][x] === 'shot' &&
+                            gameBoard[y - 1][x] === 'shot'
+                          ) {
+                            gameBoard[y][x] = 'killed';
+                            gameBoard[y + 1][x] = 'killed';
+                            gameBoard[y - 2][x] = 'killed';
+                            gameBoard[y - 1][x] = 'killed';
+                            attackNeighboringCells(x, y, gameBoard, index);
+                            attackNeighboringCells(x, y - 1, gameBoard, index);
+                            attackNeighboringCells(x, y + 1, gameBoard, index);
+                            attackNeighboringCells(x, y - 2, gameBoard, index);
+                            attackPlayer(x, y, index, 'killed');
+                            attackPlayer(x, y + 1, index, 'killed');
+                            attackPlayer(x, y - 2, index, 'killed');
+                            attackPlayer(x, y - 1, index, 'killed');
+                            return 'killed';
+                          }          
                         break;
                     default:
                         throw new Error(`${gameBoard[y][x]}`);
