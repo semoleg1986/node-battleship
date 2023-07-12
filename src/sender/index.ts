@@ -1,5 +1,5 @@
 import { CustomWebSocket, IIndex, Request } from '../types/index';
-import { addIndex, firstPlayerMessage, indexes, placeShip, registerPlayer, resetRoomUsers } from '../data/index';
+import { addIndex, firstPlayerMessage, indexes, placeShip, registerPlayer, resetFirstPlayer, resetRoomUsers } from '../data/index';
 import { roomRegister } from '../data/index';
 import {getValueByXY} from '../game/index';
 
@@ -136,6 +136,7 @@ export const startGame = (ws: CustomWebSocket, receivedMessage: Request) => {
         const playerIndex = indexes.find((user) => user.idGame === gameId && user.index === client.index);
         return playerIndex !== undefined;
     });
+    console.log(filteredClients);
     if (firstPlayerMessage.length === 0) {
         firstPlayerMessage.push(receivedMessage);
     } else {
@@ -145,10 +146,11 @@ export const startGame = (ws: CustomWebSocket, receivedMessage: Request) => {
                 type: 'start_game',
                 data: JSON.stringify({
                     ships,
-                    currentPlayerIndex: indexPlayer,
+                    currentPlayerIndex: JSON.parse(firstPlayerMessage[0].data).indexPlayer,
                 }),
                 id: 0,
             };
+            console.log(firstPlayerMessageToSend);
             ws.send(JSON.stringify(firstPlayerMessageToSend));
         }
         const secondPlayerData = indexes.find((data) => data.idGame === gameId && data.index !== ws.index);
@@ -157,14 +159,16 @@ export const startGame = (ws: CustomWebSocket, receivedMessage: Request) => {
                 type: 'start_game',
                 data: JSON.stringify({
                     ships: JSON.parse(firstPlayerMessage[0].data).ships,
-                    currentPlayerIndex: secondPlayerData.idPlayer,
+                    currentPlayerIndex: indexPlayer,
                 }),
                 id: 0,
             };
+            console.log(updatedMessage);
             filteredClients.forEach((client) => {
                 client.send(JSON.stringify(updatedMessage));
             });
         }
+        resetFirstPlayer();
     }
 };
 
@@ -239,10 +243,12 @@ export const turnUser = (receivedMessage:Request, status = 'start') => {
     let randomPlayer:any;
     if (status === 'miss' || status === 'killed'){
         randomPlayer = indexPlayer;
+        console.log(status);
     } else {
         const randomIndex = Math.floor(Math.random() * gamePlayers.length);
         randomPlayer = gamePlayers[randomIndex];
         console.log(randomPlayer);
+        console.log('other');
         return randomPlayer;
     }
     const dataIndex = indexes.find((user) => user.idPlayer === randomPlayer);
