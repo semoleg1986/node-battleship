@@ -1,4 +1,4 @@
-import { IGameSession, IIndex, IRoomUsers, Ship } from '../types';
+import { IGameSession, IIndex, IRoomUsers, Request, Ship } from '../types';
 
 class Player {
     name: string;
@@ -21,6 +21,8 @@ export const gameSession: IGameSession[] = [];
 export const roomUsers: IRoomUsers[] = [];
 
 export const indexes:IIndex[] = [];
+
+export const firstPlayerMessage: Request[] = [];
 
 export function playerExists(name: string): boolean {
     return players.some((player) => player.name === name);
