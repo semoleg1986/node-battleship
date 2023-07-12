@@ -49,7 +49,6 @@ wss.on('connection', (ws:CustomWebSocket)=>{
         break;
       case 'attack':
         userAttack(ws, receivedMessage);
-        turnUser(ws, receivedMessage);
         break;
       default:
         console.log(`Uknown message type ${type}`);
