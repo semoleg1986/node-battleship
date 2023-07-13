@@ -45,7 +45,6 @@ wss.on('connection', (ws:CustomWebSocket)=>{
       case 'add_ships':
         addMatrix(receivedMessage);
         startGame(ws, receivedMessage);
-        // turnUser(receivedMessage);
         break;
       case 'attack':
         userAttack(receivedMessage);
