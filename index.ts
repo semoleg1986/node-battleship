@@ -2,8 +2,8 @@ import { httpServer } from './src/http_server/index';
 import { WebSocketServer } from 'ws';
 import {v4 as uuid} from 'uuid';
 
-import { CustomWebSocket, Request } from './src/types/index';
-import { userRegistration, updateRoom, createGame, startGame, userAttack, addMatrix } from './src/sender/index';
+import { CustomWebSocket, Request,  } from './src/types/index';
+import { userRegistration, updateRoom, startGame, userAttack, addMatrix, createGame } from './src/sender/index';
 
 
 const HTTP_PORT = 8181;
@@ -13,8 +13,6 @@ export const wsclients:CustomWebSocket[] = [];
 
 let idGame = 0;
 let roomId = 0;
-let idPlayer = 0;
-
 
 console.log(`Start static http server on the ${HTTP_PORT} port!`);
 httpServer.listen(HTTP_PORT);
@@ -42,8 +40,7 @@ wss.on('connection', (ws:CustomWebSocket)=>{
         break;
       case 'add_user_to_room':
         idGame++;
-        idPlayer++;
-        createGame(ws, idGame, idPlayer);
+        createGame(ws, idGame, receivedMessage);
         break;
       case 'add_ships':
         addMatrix(receivedMessage);

@@ -20,6 +20,8 @@ export const gameSession: IGameSession[] = [];
 
 export const roomUsers: IRoomUsers[] = [];
 
+
+
 export const indexes:IIndex[] = [];
 
 export const firstPlayerMessage: Request[] = [];
@@ -31,14 +33,14 @@ export function resetFirstPlayer(): void {
 export function playerExists(name: string): boolean {
     return players.some((player) => player.name === name);
   }
-export const roomRegister = (name: string, index: string): IRoomUsers => {
-  const newPlayer: IRoomUsers = { name, index };
-  roomUsers.push(newPlayer);
+// export const roomRegister = (roomId: number, roomUsers: IPlayer[]): IRoomUsers => {
+//   const newPlayer: IRoomUsers = { name, ind
+//   roomUsers.push(newPlayer);
 
-  return newPlayer;
-};
+//   return newPlayer;
+// };
 
-export const addIndex = (idGame:number, idPlayer: number, index: string): IIndex => {
+export const addIndex = (idGame:number, idPlayer: string, index: string): IIndex => {
   const newPlayer: IIndex = { idGame, idPlayer, index };
   indexes.push(newPlayer);
   return newPlayer;
@@ -68,7 +70,7 @@ export function registerPlayer(name: string, password: string, index: string) {
 export const ChangeMatrix = (x:number, y:number) =>{
   console.log(x,y);
 };
-export const placeShip = (gameId:number,indexPlayer:number,ships:Ship[]) => {
+export const placeShip = (gameId:number,indexPlayer:string,ships:Ship[]) => {
     const gridSize = 10;
     const gameBoard = new Array(gridSize);
 

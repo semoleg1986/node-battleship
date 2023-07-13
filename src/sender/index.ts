@@ -1,6 +1,6 @@
 import { CustomWebSocket, IIndex, Request } from '../types/index';
-import { addIndex, firstPlayerMessage, indexes, placeShip, registerPlayer, resetFirstPlayer, resetRoomUsers } from '../data/index';
-import { roomRegister } from '../data/index';
+import { addIndex, firstPlayerMessage, indexes, placeShip, registerPlayer, resetFirstPlayer } from '../data/index';
+// import { roomRegister } from '../data/index';
 import {getValueByXY} from '../game/index';
 
 import { players } from '../data/index';
@@ -70,51 +70,91 @@ export const userRegistration = (receivedMessage: Request, ws:CustomWebSocket) =
     }
 };
 
-export const updateRoom = (ws:CustomWebSocket, roomId: number) => {
-    if (roomUsers.length === 0) {
-        const name = getPlayerNameByIndex(ws.index);
-        roomRegister(name, ws.index);
-        const rooms = JSON.stringify([{
-            roomId: roomId,
-            roomUsers: roomUsers,
-        }]);
-        
-        const updatedMessage : Request = {
-            type: 'update_room',
-            data: rooms,
-            id: 0,
-        };
-        sendToAllClients(updatedMessage, wsclients);
-        console.log(`Create room N${ws.index}`);
+export const updateRoom = (ws: CustomWebSocket, roomId: number) => {
+    const name = getPlayerNameByIndex(ws.index);  
+    const existingRoomIndex = roomUsers.findIndex((room) => room.roomUsers.some((user) => user.index === ws.index));
+  
+    if (existingRoomIndex !== -1) {
+      roomUsers.splice(existingRoomIndex, 1);
+      console.log(`Room with user index ${ws.index} already exists. Deleting the room.`);
+      console.log(roomUsers);
     }
-};
-
-export const createGame = (ws:CustomWebSocket, idGame:number, idPlayer:number) => {
-    if (roomUsers.length === 1) {
+  
+    const rooms = {
+      roomId: roomId,
+      roomUsers: [
+        {
+          name: name,
+          index: ws.index,
+        },
+      ],
+    };
+    roomUsers.push(rooms);
+  
+    const updatedMessage = {
+      type: 'update_room',
+      data: JSON.stringify(roomUsers),
+      id: 0,
+    };
+    sendToAllClients(updatedMessage, wsclients);
+    console.log(`Create room N${roomId}`);
+    console.log(roomUsers);
+  };
+  
+export const createGame = (ws: CustomWebSocket, idGame: number, receivedMessage: Request) => {
+    const { indexRoom } = JSON.parse(receivedMessage.data);    
+    // Поиск комнаты по roomId
+    const roomIndex = roomUsers.findIndex((room) => room.roomId === indexRoom);
+    
+    // Если комната существует, добавить игрока в комнату
+    if (roomIndex !== -1) {
         const name = getPlayerNameByIndex(ws.index);
-        const isIndexRegistered = roomUsers.some((user) => user.index === ws.index);
-        if (!isIndexRegistered) {
-            roomRegister(name, ws.index);
-            const filteredClients = wsclients.filter((client) => roomUsers.some((user) => 
-            user.index === client.index));
-            resetRoomUsers();
-            filteredClients.forEach((client) => {
-                addIndex(idGame, idPlayer, client.index); 
-                const updatedMessage: Request = {
-                    type: 'create_game',
-                    data: JSON.stringify({
-                    idGame: idGame,
-                    idPlayer: idPlayer,
-                    }),
-                    id: 0,
-                };
-                idPlayer++;
-                client.send(JSON.stringify(updatedMessage));
-            });
+        const creatorIndex = roomUsers[roomIndex].roomUsers[0].index; // Индекс создателя комнаты
+      
+      // Проверка, что игрок не является создателем комнаты
+        if (ws.index !== creatorIndex) {
+            const player = {
+            name: name,
+            index: ws.index,
+        };
+        
+        // Проверка на максимальное количество игроков в комнате (не более 2 игроков)
+            if (roomUsers[roomIndex].roomUsers.length < 2) {
+                roomUsers[roomIndex].roomUsers.push(player);
+                console.log(roomUsers);
+                console.log(`Player ${name} added to room ${indexRoom}`);
+                
+                // Извлечение всех индексов игроков комнаты из wsclients
+                const roomPlayerIndexes = roomUsers[roomIndex].roomUsers.map((user) => user.index);
+                roomUsers.splice(roomIndex, 1);
+                console.log(roomUsers);
+                
+                // Фильтрация wsclients, чтобы оставить только клиентов с индексами игроков комнаты
+                const filteredClients = wsclients.filter((client) => roomPlayerIndexes.includes(client.index));
+                filteredClients.forEach((client) => {
+                        addIndex(idGame, client.index, client.index); 
+                        const updatedMessage: Request = {
+                            type: 'create_game',
+                            data: JSON.stringify({
+                            idGame: idGame,
+                            idPlayer: client.index,
+                            }),
+                            id: 0,
+                        };
+                        client.send(JSON.stringify(updatedMessage));
+                    });
+                    console.log(`Room ${indexRoom} removed`);
+            } else {
+                console.log('The room is already full. Cannot add more players.');
+            }
+        } else {
+            console.log('The creator of the room cannot join it.');
         }
-      }
-};
-
+    } else {
+        console.log(`Room ${indexRoom} not found`);
+    }
+  };
+  
 export const addMatrix = (receivedMessage: Request) => {
     try {
         const { gameId, ships, indexPlayer } = JSON.parse(receivedMessage.data);
@@ -131,44 +171,42 @@ export const addMatrix = (receivedMessage: Request) => {
 
 
 export const startGame = (ws: CustomWebSocket, receivedMessage: Request) => {
-    const { gameId, ships, indexPlayer } = JSON.parse(receivedMessage.data);
-    const filteredClients = wsclients.filter((client) => {
-        const playerIndex = indexes.find((user) => user.idGame === gameId && user.index === client.index);
-        return playerIndex !== undefined;
-    });
-    console.log(filteredClients);
+    const { ships, indexPlayer } = JSON.parse(receivedMessage.data);
+
     if (firstPlayerMessage.length === 0) {
         firstPlayerMessage.push(receivedMessage);
+        console.log(ws.index);
+        console.log(firstPlayerMessage);
+        console.log(JSON.parse(firstPlayerMessage[0].data).indexPlayer);
     } else {
-        const firstPlayerData = indexes.find((data) => data.idGame === gameId && data.index === ws.index);
-        if (firstPlayerData) {
-            const firstPlayerMessageToSend: Request = {
-                type: 'start_game',
-                data: JSON.stringify({
-                    ships,
-                    currentPlayerIndex: JSON.parse(firstPlayerMessage[0].data).indexPlayer,
-                }),
-                id: 0,
-            };
-            console.log(firstPlayerMessageToSend);
-            ws.send(JSON.stringify(firstPlayerMessageToSend));
-        }
-        const secondPlayerData = indexes.find((data) => data.idGame === gameId && data.index !== ws.index);
-        if (secondPlayerData) {
+        console.log(ws.index);
+        const filteredClient = wsclients.find((client) => client.index === JSON.parse(firstPlayerMessage[0].data).indexPlayer);
+        if (filteredClient) {
             const updatedMessage: Request = {
                 type: 'start_game',
                 data: JSON.stringify({
                     ships: JSON.parse(firstPlayerMessage[0].data).ships,
+                    currentPlayerIndex: JSON.parse(firstPlayerMessage[0].data).indexPlayer,
+                }),
+                id: 0,
+            };
+            console.log(filteredClient.index);
+            filteredClient.send(JSON.stringify(updatedMessage));
+            const firstPlayerMessageToSend: Request = {
+                type: 'start_game',
+                data: JSON.stringify({
+                    ships,
                     currentPlayerIndex: indexPlayer,
                 }),
                 id: 0,
             };
-            console.log(updatedMessage);
-            filteredClients.forEach((client) => {
-                client.send(JSON.stringify(updatedMessage));
-            });
-        }
-        resetFirstPlayer();
+            ws.send(JSON.stringify(firstPlayerMessageToSend));
+            console.log(firstPlayerMessageToSend);
+            console.log(indexPlayer);
+            resetFirstPlayer();
+          } else {
+            console.log('Клиент с указанным индексом не найден.');
+          }
     }
 };
 
@@ -198,11 +236,10 @@ export const userAttack = (receivedMessage: Request) => {
             id: 0,
         };
         client.send(JSON.stringify(updatedMessage));
-        console.log(`Attack in game: ${gameId} player: ${indexPlayer}.`);
     });
 };
 
-export const attackPlayer = (x: number, y: number, indexPlayer: number, status: string) => {
+export const attackPlayer = (x: number, y: number, indexPlayer: string, status: string) => {
     const data = indexes.find((user) => user.idPlayer === indexPlayer);
     if (!data) {
         return;
