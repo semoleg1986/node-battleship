@@ -172,14 +172,9 @@ export const addMatrix = (receivedMessage: Request) => {
 
 export const startGame = (ws: CustomWebSocket, receivedMessage: Request) => {
     const { ships, indexPlayer } = JSON.parse(receivedMessage.data);
-
     if (firstPlayerMessage.length === 0) {
         firstPlayerMessage.push(receivedMessage);
-        console.log(ws.index);
-        console.log(firstPlayerMessage);
-        console.log(JSON.parse(firstPlayerMessage[0].data).indexPlayer);
     } else {
-        console.log(ws.index);
         const filteredClient = wsclients.find((client) => client.index === JSON.parse(firstPlayerMessage[0].data).indexPlayer);
         if (filteredClient) {
             const updatedMessage: Request = {
@@ -190,7 +185,6 @@ export const startGame = (ws: CustomWebSocket, receivedMessage: Request) => {
                 }),
                 id: 0,
             };
-            console.log(filteredClient.index);
             filteredClient.send(JSON.stringify(updatedMessage));
             const firstPlayerMessageToSend: Request = {
                 type: 'start_game',
@@ -201,8 +195,6 @@ export const startGame = (ws: CustomWebSocket, receivedMessage: Request) => {
                 id: 0,
             };
             ws.send(JSON.stringify(firstPlayerMessageToSend));
-            console.log(firstPlayerMessageToSend);
-            console.log(indexPlayer);
             resetFirstPlayer();
           } else {
             console.log('Клиент с указанным индексом не найден.');
