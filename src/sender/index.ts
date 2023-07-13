@@ -113,7 +113,6 @@ export const createGame = (ws: CustomWebSocket, idGame: number, receivedMessage:
         };
             if (roomUsers[roomIndex].roomUsers.length < 2) {
                 roomUsers[roomIndex].roomUsers.push(player);
-                console.log(roomUsers);
                 console.log(`Player ${name} added to room ${indexRoom}`);
 
                 const roomPlayerIndexes = roomUsers[roomIndex].roomUsers.map((user) => user.index);
@@ -196,7 +195,7 @@ export const startGame = (ws: CustomWebSocket, receivedMessage: Request) => {
 
 export const userAttack = (receivedMessage: Request) => {
     const { gameId, x, y, indexPlayer } = JSON.parse(receivedMessage.data);
-
+    
     const status = getValueByXY(gameId, indexPlayer, x, y);
     turnUser(receivedMessage, status);
     const filteredClients = wsclients.filter((client) => {
@@ -245,9 +244,8 @@ export const attackPlayer = (x: number, y: number, indexPlayer: string, status: 
             id: 0,
         };
         client.send(JSON.stringify(updatedMessage));
-    });};
-
-
+    });
+};
 
 export const turnUser = (receivedMessage: Request, status: string|undefined) => {
     const {indexPlayer } = JSON.parse(receivedMessage.data);
@@ -263,7 +261,6 @@ export const turnUser = (receivedMessage: Request, status: string|undefined) => 
         return playerIndex !== undefined;
     });
     const currentPlayer = (status === 'miss' || status === 'killed') ? (anotherPlayer?.idPlayer || '') : data.idPlayer;
-
     filteredClients.forEach((client) => {
             const updatedMessage: Request = {
                 type: 'turn',
@@ -272,7 +269,7 @@ export const turnUser = (receivedMessage: Request, status: string|undefined) => 
                 }),
                 id: 0,
             };
-            console.log(client.index);
             client.send(JSON.stringify(updatedMessage));
     });
+    return currentPlayer;
 };
