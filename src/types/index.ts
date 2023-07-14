@@ -41,3 +41,8 @@ export interface Ship {
   length: number;
   [index: number]: string;
 }
+
+export interface IKilled {
+  idPlayer: string;
+  ships: string[];
+}

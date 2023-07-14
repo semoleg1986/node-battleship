@@ -1,4 +1,4 @@
-import { IGameSession, IIndex, IRoomUsers, Request, Ship } from '../types';
+import { IGameSession, IIndex, IKilled, IRoomUsers, Request, Ship } from '../types';
 
 class Player {
     name: string;
@@ -22,7 +22,7 @@ export const checkSession: IGameSession[] = [];
 
 export const roomUsers: IRoomUsers[] = [];
 
-
+export const killedList: IKilled [] = [];
 
 export const indexes:IIndex[] = [];
 
@@ -132,3 +132,14 @@ export const checkAttack = (gameId:number,indexPlayer:string,ships:Ship[]) => {
     };
     checkSession.push(gameDataStorage);
   };
+
+  export const addShipToPlayer = (idPlayer: string, ship: string) => {
+    const player = killedList.find((player) => player.idPlayer === idPlayer);
+    if (player) {
+      player.ships.push(ship);
+    } else {
+      const newPlayer: IKilled = { idPlayer, ships: [ship] };
+      killedList.push(newPlayer);
+    }
+  };
+  
