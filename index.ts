@@ -8,8 +8,7 @@ import { userRegistration, updateRoom, startGame, userAttack, addMatrix, createG
 
 const HTTP_PORT = 8181;
 export const wsclients:CustomWebSocket[] = [];
-
-
+export const nextPlayer:string[] = [];
 
 let idGame = 0;
 let roomId = 0;

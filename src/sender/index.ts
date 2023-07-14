@@ -1,10 +1,10 @@
 import { CustomWebSocket, IIndex, Request } from '../types/index';
-import { addIndex, firstPlayerMessage, indexes, placeShip, registerPlayer, resetFirstPlayer } from '../data/index';
+import { addIndex, checkAttack, firstPlayerMessage, indexes, placeShip, registerPlayer, resetFirstPlayer } from '../data/index';
 // import { roomRegister } from '../data/index';
 import {getValueByXY} from '../game/index';
 
 import { players } from '../data/index';
-import { wsclients } from '../../index';
+import { nextPlayer, wsclients } from '../../index';
 import { roomUsers } from '../data/index';
 
 
@@ -150,6 +150,7 @@ export const addMatrix = (receivedMessage: Request) => {
         const updatedIndexPlayer = indexes.find((data: IIndex) => data.idGame === gameId && data.idPlayer !== indexPlayer);
         if (updatedIndexPlayer) {
             placeShip(gameId, updatedIndexPlayer.idPlayer, ships);
+            checkAttack(gameId, updatedIndexPlayer.idPlayer, ships);
         } else {
             console.error('Could not find updatedIndexPlayer');
         }
@@ -195,28 +196,44 @@ export const startGame = (ws: CustomWebSocket, receivedMessage: Request) => {
 
 export const userAttack = (receivedMessage: Request) => {
     const { gameId, x, y, indexPlayer } = JSON.parse(receivedMessage.data);
-    
-    const status = getValueByXY(gameId, indexPlayer, x, y);
-    turnUser(receivedMessage, status);
-    const filteredClients = wsclients.filter((client) => {
-        const playerIndex = indexes.find((user) => user.idGame === gameId && user.index === client.index);
-        return playerIndex !== undefined;
-    });
-    filteredClients.forEach((client) => {
-        const updatedMessage: Request = {
-            type: 'attack',
-            data: JSON.stringify({
-                position: {
-                    x: x,
-                    y: y,
-                },
-                currentPlayer: indexPlayer,
-                status: status,
-            }),
-            id: 0,
-        };
-        client.send(JSON.stringify(updatedMessage));
-    });
+    const lastStep = nextPlayer.slice(-1)[0];
+    // const data = indexes.find((user) => user.idPlayer === indexPlayer);
+    // if (!data) {
+    //     return;
+    // }
+
+    // const anotherPlayer = indexes.find((user) => user.idGame === gameId && user.index !== indexPlayer);
+
+    // const check = getValueByXY(gameId, indexPlayer, x, y, 'check');
+    // const currentPlayer = (check === 'miss' || check === 'killed') ? (anotherPlayer?.idPlayer || '') : data.idPlayer;
+    // if (indexPlayer === currentPlayer) {
+    //     console.log('Player 1 is not allowed to shoot after a miss or a kill.');
+    //     return;
+    // }
+    // console.log(check);
+    if (indexPlayer===lastStep) {
+        const status = getValueByXY(gameId, indexPlayer, x, y, 'attack');
+        turnUser(receivedMessage, status);
+        const filteredClients = wsclients.filter((client) => {
+            const playerIndex = indexes.find((user) => user.idGame === gameId && user.index === client.index);
+            return playerIndex !== undefined;
+        });
+        filteredClients.forEach((client) => {
+            const updatedMessage: Request = {
+                type: 'attack',
+                data: JSON.stringify({
+                    position: {
+                        x: x,
+                        y: y,
+                    },
+                    currentPlayer: indexPlayer,
+                    status: status,
+                }),
+                id: 0,
+            };
+            client.send(JSON.stringify(updatedMessage));
+        });
+    }
 };
 
 export const attackPlayer = (x: number, y: number, indexPlayer: string, status: string) => {
@@ -271,5 +288,6 @@ export const turnUser = (receivedMessage: Request, status: string|undefined) => 
             };
             client.send(JSON.stringify(updatedMessage));
     });
+    nextPlayer.push(currentPlayer);
     return currentPlayer;
 };
