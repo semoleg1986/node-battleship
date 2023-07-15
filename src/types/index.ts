@@ -42,7 +42,17 @@ export interface Ship {
   [index: number]: string;
 }
 
+export interface INextPlayer {
+  idGame: number;
+  lastSteps: string[];
+}
 export interface IKilled {
   idPlayer: string;
   ships: string[];
+}
+
+
+export interface Winner {
+  name:  string;
+  wins: number;
 }

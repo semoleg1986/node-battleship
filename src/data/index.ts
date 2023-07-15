@@ -1,4 +1,5 @@
-import { IGameSession, IIndex, IKilled, IRoomUsers, Request, Ship } from '../types';
+import { nextPlayer } from '../..';
+import { IGameSession, IIndex, IKilled, INextPlayer, IRoomUsers, Request, Ship } from '../types';
 
 class Player {
     name: string;
@@ -27,6 +28,7 @@ export const killedList: IKilled [] = [];
 export const indexes:IIndex[] = [];
 
 export const firstPlayerMessage: Request[] = [];
+
 
 export function resetFirstPlayer(): void {
   firstPlayerMessage.length = 0;
@@ -61,6 +63,7 @@ export function registerPlayer(name: string, password: string, index: string) {
     }
   
     const newPlayer = new Player(name, password, index);
+    newPlayer.wins = 0; 
     players.push(newPlayer);
 
     return {
@@ -142,4 +145,25 @@ export const checkAttack = (gameId:number,indexPlayer:string,ships:Ship[]) => {
       killedList.push(newPlayer);
     }
   };
+
+  export const addLastToList = (idGame: number, lastStep: string) => {
+    const player = nextPlayer.find((player) => player.idGame === idGame);
+    if (player) {
+      player.lastSteps.push(lastStep);
+    } else {
+      const newPlayer: INextPlayer = { idGame, lastSteps: [lastStep] };
+      nextPlayer.push(newPlayer);
+    }
+  };
+
+  export const updatePlayerWins = (name: string, players: Player[]): void => {
+    const player = players.find((player) => player.name === name);
+    
+    if (player) {
+      player.wins++;
+      console.log(player);
+    }
+  };
+  
+  
   
