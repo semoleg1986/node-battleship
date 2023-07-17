@@ -451,7 +451,6 @@ export const turnUser = (receivedMessage: Request, status: string|undefined) => 
         return playerIndex !== undefined;
     });
     const currentPlayer = (status === 'miss') ? (anotherPlayer?.idPlayer || '') : data.idPlayer;
-    console.log(currentPlayer);
     filteredClients.forEach((client) => {
             const updatedMessage: Request = {
                 type: 'turn',
