@@ -140,9 +140,11 @@ export const checkAttack = (gameId:number,indexPlayer:string,ships:Ship[]) => {
     const player = killedList.find((player) => player.idPlayer === idPlayer);
     if (player) {
       player.ships.push(ship);
+      console.log(killedList);
     } else {
       const newPlayer: IKilled = { idPlayer, ships: [ship] };
       killedList.push(newPlayer);
+      console.log(killedList);
     }
   };
 
@@ -150,9 +152,11 @@ export const checkAttack = (gameId:number,indexPlayer:string,ships:Ship[]) => {
     const player = nextPlayer.find((player) => player.idGame === idGame);
     if (player) {
       player.lastSteps.push(lastStep);
+      console.log(nextPlayer);
     } else {
       const newPlayer: INextPlayer = { idGame, lastSteps: [lastStep] };
       nextPlayer.push(newPlayer);
+      console.log(nextPlayer);
     }
   };
   

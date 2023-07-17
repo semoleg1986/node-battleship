@@ -300,6 +300,7 @@ export const getValueByXY = (gameId: number, index: string, x: number, y: number
                             y - 2 < gameBoard.length &&
                             y - 1 >= 0 &&
                             gameBoard[y + 1][x] === 'shot' &&
+                            Array.isArray(gameBoard[y - 2]) &&
                             gameBoard[y - 2][x] === 'shot' &&
                             gameBoard[y - 1][x] === 'shot'
                           ) {

@@ -5,6 +5,7 @@ import {v4 as uuid} from 'uuid';
 import { CustomWebSocket, INextPlayer, Request,  } from './src/types/index';
 import { userRegistration, updateRoom, createGame, finishGame } from './src/sender/index';
 import { startGame, userAttack, addMatrix, randomAttack } from './src/sender/game';
+import { playWithBot } from './src/bot/index';
 
 
 
@@ -51,18 +52,18 @@ wss.on('connection', (ws:CustomWebSocket)=>{
         createGame(ws, idGame, receivedMessage);
         break;
       case 'add_ships':
-        addMatrix(receivedMessage);
+        addMatrix(ws, receivedMessage);
         startGame(ws, receivedMessage);
         break;
       case 'attack':
-        userAttack(receivedMessage);
+        userAttack(ws, receivedMessage);
         break;
       case 'randomAttack':
         randomAttack(receivedMessage);
         break;
-      // case 'single_play':
-      //   playWithBot(receivedMessage, ws);
-      //   break;
+      case 'single_play':
+        playWithBot(receivedMessage, ws);
+        break;
       case 'disconnect':
         finishGame(ws);
         break;
