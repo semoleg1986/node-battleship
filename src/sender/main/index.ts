@@ -450,7 +450,7 @@ export const turnUser = (receivedMessage: Request, status: string|undefined) => 
         const playerIndex = indexes.find((user) => user.idGame === gameId && user.index === client.index);
         return playerIndex !== undefined;
     });
-    const currentPlayer = (status === 'miss' || status === 'killed') ? (anotherPlayer?.idPlayer || '') : data.idPlayer;
+    const currentPlayer = (status === 'miss') ? (anotherPlayer?.idPlayer || '') : data.idPlayer;
     console.log(currentPlayer);
     filteredClients.forEach((client) => {
             const updatedMessage: Request = {

@@ -20,7 +20,7 @@ export const userAttack = (ws: CustomWebSocket, receivedMessage: Request) => {
           };
         if (ws.index===checkLastStep(gameId)) {
             const status = getValueByXY(gameId, indexPlayer, x, y, 'attack');
-            const currentPlayer:string = (status === 'miss' || status === 'killed') ? 'bot' : ws.index;
+            const currentPlayer:string = (status === 'miss') ? 'bot' : ws.index;
             addLastToList(gameId, currentPlayer);
             const updatedMessage: Request = {
                 type: 'attack',
@@ -75,7 +75,7 @@ export const userAttack = (ws: CustomWebSocket, receivedMessage: Request) => {
             const x =  Math.floor(Math.random() * 10);
             const y =  Math.floor(Math.random() * 10);
             const status = getValueByXY(gameId, 'bot', x, y, 'attack');
-            const currentPlayer = (status === 'miss' || status === 'killed') ? ws.index : 'bot';
+            const currentPlayer = (status === 'miss') ? ws.index : 'bot';
             addLastToList(gameId, currentPlayer);
             const updatedMessage: Request = {
                 type: 'attack',
@@ -95,7 +95,7 @@ export const userAttack = (ws: CustomWebSocket, receivedMessage: Request) => {
                 const x =  Math.floor(Math.random() * 10);
                 const y =  Math.floor(Math.random() * 10);
                 const status = getValueByXY(gameId, 'bot', x, y, 'attack');
-                const currentPlayer = (status === 'miss' || status === 'killed') ? ws.index : 'bot';
+                const currentPlayer = (status === 'miss') ? ws.index : 'bot';
                 addLastToList(gameId, currentPlayer);
                 const updatedMessage: Request = {
                     type: 'attack',
