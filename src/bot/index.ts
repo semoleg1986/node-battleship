@@ -1,5 +1,5 @@
 import { CustomWebSocket, Request } from '../types/index';
-import { addIndex, indexes,  placeShip, roomUsers }from '../data/index';
+import { addIndex, placeShip, roomUsers }from '../data/index';
 
 
 import { ships2 } from '../data/ships';
@@ -28,7 +28,6 @@ export const playWithBot = (receivedMessage: Request, ws:CustomWebSocket) => {
         id: 0,
     };
     addIndex(idGame, ws.index, ws.index);
-    console.log(indexes); 
     ws.send(JSON.stringify(response));
     placeShip(idGame, ws.index, ships2);
 };

@@ -37,12 +37,7 @@ export function resetFirstPlayer(): void {
 export function playerExists(name: string): boolean {
     return players.some((player) => player.name === name);
   }
-// export const roomRegister = (roomId: number, roomUsers: IPlayer[]): IRoomUsers => {
-//   const newPlayer: IRoomUsers = { name, ind
-//   roomUsers.push(newPlayer);
 
-//   return newPlayer;
-// };
 
 export const addIndex = (idGame:number, idPlayer: string, index: string): IIndex => {
   const newPlayer: IIndex = { idGame, idPlayer, index };
@@ -140,11 +135,9 @@ export const checkAttack = (gameId:number,indexPlayer:string,ships:Ship[]) => {
     const player = killedList.find((player) => player.idPlayer === idPlayer);
     if (player) {
       player.ships.push(ship);
-      console.log(killedList);
     } else {
       const newPlayer: IKilled = { idPlayer, ships: [ship] };
       killedList.push(newPlayer);
-      console.log(killedList);
     }
   };
 
@@ -152,11 +145,9 @@ export const checkAttack = (gameId:number,indexPlayer:string,ships:Ship[]) => {
     const player = nextPlayer.find((player) => player.idGame === idGame);
     if (player) {
       player.lastSteps.push(lastStep);
-      console.log(nextPlayer);
     } else {
       const newPlayer: INextPlayer = { idGame, lastSteps: [lastStep] };
       nextPlayer.push(newPlayer);
-      console.log(nextPlayer);
     }
   };
   

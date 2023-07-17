@@ -18,9 +18,7 @@ export const userAttack = (ws: CustomWebSocket, receivedMessage: Request) => {
               console.log(`No last step found for game ${idGame}`);
             }
           };
-        console.log(checkLastStep(gameId));
         if (ws.index===checkLastStep(gameId)) {
-            console.log('Mode - bot');
             const status = getValueByXY(gameId, indexPlayer, x, y, 'attack');
             const currentPlayer:string = (status === 'miss' || status === 'killed') ? 'bot' : ws.index;
             addLastToList(gameId, currentPlayer);
@@ -37,7 +35,41 @@ export const userAttack = (ws: CustomWebSocket, receivedMessage: Request) => {
                 id: 0,
             };
             ws.send(JSON.stringify(updatedMessage));
-            turnUserWithBot(ws, gameId);   
+            turnUserWithBot(ws, gameId);
+            const player = killedList.find((player) => player.idPlayer === indexPlayer);
+    
+            if (player) {
+              if (player.ships.length === 10) {
+                removePlayerById(gameId);
+                removeKilledDataByIdPlayer(ws.index);
+                removeGameSessionByGameId(gameId);
+                removeIndexByGameId(gameId);
+                const updatedMessage: Request = {
+                    type: 'finish',
+                    data: JSON.stringify({
+                        winPlayer: indexPlayer,
+                    }),
+                    id: 0,
+                };
+                ws.send(JSON.stringify(updatedMessage));
+                const name = getPlayerNameByIndex(indexPlayer);  
+                updatePlayerWins(name, players);
+                const transformedPlayers = players
+                .filter((player) => player.wins > 0)
+                .map((player) => {
+                  return {
+                    name: player.name,
+                    wins: player.wins,
+                  };
+                });
+
+                const updatedMessage2: Request = {
+                    type: 'update_winners',
+                    data: JSON.stringify(transformedPlayers),
+                    id: 0,
+                };
+                ws.send(JSON.stringify(updatedMessage2));}}
+
         }
         if ('bot'===checkLastStep(gameId)){
             const x =  Math.floor(Math.random() * 10);
@@ -83,7 +115,6 @@ export const userAttack = (ws: CustomWebSocket, receivedMessage: Request) => {
         }
     } else {
         removeDuplicatePlayers();
-
         const checkLastStep = (idGame: number) => {
             const player = nextPlayer.find((player) => player.idGame === idGame);
             if (player && player.lastSteps.length > 0) {

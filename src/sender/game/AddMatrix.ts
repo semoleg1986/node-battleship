@@ -1,4 +1,4 @@
-import { checkAttack, gameSession, killedList, placeShip } from '../../data';
+import { checkAttack, killedList, placeShip } from '../../data';
 import { CustomWebSocket, IKilled, Request } from '../../types';
 import { findUpdatedIndexPlayer } from '../../utils';
 import { turnUser } from '../main';
@@ -10,7 +10,6 @@ export const addMatrix = (ws:CustomWebSocket, receivedMessage: Request) => {
             const status = 'shot';
             console.log('game with bot');
             placeShip(gameId, 'bot', ships);
-            console.log(gameSession);
             const updatedMessage: Request = {
                 type: 'start_game',
                 data: JSON.stringify({
