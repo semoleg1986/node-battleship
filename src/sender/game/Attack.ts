@@ -5,6 +5,7 @@ import { getValueByXY } from '../../game';
 import { CustomWebSocket, Request } from '../../types';
 import { filterClientsByIndex, getPlayerNameByIndex } from '../../utils';
 import { turnUserWithBot } from '../game/WhoMv';
+import { updateWinners } from '../updater';
 
 export const userAttack = (ws: CustomWebSocket, receivedMessage: Request) => {
     const { gameId, x, y, indexPlayer } = JSON.parse(receivedMessage.data);
@@ -69,6 +70,7 @@ export const userAttack = (ws: CustomWebSocket, receivedMessage: Request) => {
                     id: 0,
                 };
                 ws.send(JSON.stringify(updatedMessage2));}}
+                updateWinners();
 
         }
         if ('bot'===checkLastStep(gameId)){
@@ -180,6 +182,7 @@ export const userAttack = (ws: CustomWebSocket, receivedMessage: Request) => {
                     };
                     client.send(JSON.stringify(updatedMessage));
                 });
+                updateWinners();
               }
             } 
         }
